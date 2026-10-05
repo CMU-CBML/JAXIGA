@@ -1,0 +1,25 @@
+name: jaxfem-benchmark
+channels:
+  - conda-forge
+dependencies:
+  # Match the upstream JAX-FEM 0.0.12 environment exactly where specified.
+  - python==3.13.13
+  - numpy==2.4.6
+  - scipy==1.17.1
+  - matplotlib==3.10.9
+  - meshio==5.3.5
+  - petsc==3.25.5
+  - petsc4py==3.25.1
+  - mpich==5.0.1
+  - pip==26.1.1
+  - pip:
+      # Pin JAX explicitly so the comparison does not float with PyPI.
+      - jax==0.11.1
+      - jaxlib==0.11.1
+      - setuptools==81.0.0
+      - wheel==0.47.0
+      - gmsh==4.15.2
+      - fenics-basix==0.10.0
+      - pyfiglet==1.0.4
+      # Immutable upstream revision identifying itself as JAX-FEM 0.0.12.
+      - git+https://github.com/deepmodeling/jax-fem.git@912632b5993cd09f3776e2aa773547d39f8134a2

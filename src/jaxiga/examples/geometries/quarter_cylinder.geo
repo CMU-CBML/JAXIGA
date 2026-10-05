@@ -1,0 +1,23 @@
+// Thick-walled quarter cylinder, inner radius 1, outer radius 2, length 2.
+SetFactory("OpenCASCADE");
+Point(1) = {0, 0, 0};
+Point(2) = {1, 0, 0};
+Point(3) = {2, 0, 0};
+Point(4) = {0, 2, 0};
+Point(5) = {0, 1, 0};
+Line(1) = {2, 3};
+Circle(2) = {3, 1, 4};
+Line(3) = {4, 5};
+Circle(4) = {5, 1, 2};
+Curve Loop(1) = {1, 2, 3, 4};
+Plane Surface(1) = {1};
+Transfinite Curve {1, 2, 3, 4} = 2;
+Transfinite Surface {1};
+Recombine Surface {1};
+out[] = Extrude {0, 0, 2} { Surface{1}; Layers{2}; Recombine; };
+Physical Surface("ends") = {1, out[0]};
+Physical Surface("sym_y") = {out[2]};
+Physical Surface("outer") = {out[3]};
+Physical Surface("sym_x") = {out[4]};
+Physical Surface("inner") = {out[5]};
+Physical Volume("cylinder") = {out[1]};

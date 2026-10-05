@@ -1,0 +1,68 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jaxiga"
+version = "0.3.0"
+description = "JAX-based Isogeometric Analysis library"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Cosmin Anitescu", email = "cosmin.anitescu@outlook.com"}
+]
+keywords = ["jax", "isogeometric analysis", "iga", "pde", "scientific computing"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
+
+dependencies = [
+    "jax>=0.4.20",
+    "jaxlib>=0.4.20",
+    "numpy>=1.24",
+    "scipy>=1.10",
+    # optax backs the L-BFGS/Adam wrappers used by the energy-minimisation
+    # method, so it is a core requirement rather than an extra.
+    "optax>=0.1.7",
+]
+
+[project.optional-dependencies]
+# CAD/mesh input (.geo, STEP and .msh); loaded only when requested.
+gmsh = ["gmsh>=4.15.2"]
+# VTK output
+post = ["pyevtk>=1.2.0"]
+# matplotlib for the example scripts; pyvista backs Solution.plot()
+plot = ["matplotlib>=3.3.0", "pyvista>=0.40"]
+test = [
+    "pytest>=7.0.0",
+    "pyevtk>=1.2.0",
+]
+dev = [
+    "pytest>=7.0.0",
+    "pyevtk>=1.2.0",
+    "matplotlib>=3.3.0",
+    "black>=22.0.0",
+    "flake8>=4.0.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::SyntaxWarning"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["jaxiga*"]
+
+[tool.setuptools.package-data]
+"jaxiga.examples" = ["README.md", "geometries/*.geo", "geometries/*.mat", "geometries/README.md", "geometries/LICENSE-IGAPack.txt"]
