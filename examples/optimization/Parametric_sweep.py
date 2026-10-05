@@ -73,7 +73,7 @@ t_batch = time.perf_counter() - t0
 print(f"\nsweep over {len(values)} stiffness values")
 print(f"  max |batch - loop| = {float(jnp.abs(batch - loop).max()):.3e}")
 print(f"  python loop {t_loop:.3f}s, batched {t_batch:.3f}s "
-      f"({t_loop / t_batch:.1f}x on this CPU; the gap widens on a GPU)")
+      f"({t_loop / t_batch:.1f}x measured speedup)")
 print("  E / E_mean    tip deflection    E * deflection (should be constant)")
 for e, d in zip(values[::5], batch[::5]):
     print(f"    {float(e) / E_MEAN:.3f}       {float(d):.6e}      {float(e * d):.6e}")

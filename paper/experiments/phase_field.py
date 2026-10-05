@@ -69,22 +69,19 @@ class _CachedLU:
 def _phase_field_compute():
     """Single-edge-notched plate in tension, on an isotropically refined mesh.
 
-    Three things decide whether this reproduces the brittle response the
-    benchmark is known for, and all three were wrong in the first version of
-    this example.
+    Crack-band resolution, load increments and the inner convergence test
+    control the staggered solution.
 
-    *Resolution across the crack band* sets the peak load. At $\\ell/h = 1$ the
-    AT2 profile cannot form, damage is suppressed and the specimen never
-    cracks; the sequence over $\\ell/h = 1, 2, 4$ is $771$, $641$, $616$~N.
+    *Resolution across the crack band* affects the peak load. Under-resolving
+    the AT2 profile suppresses damage and can prevent cracking.
     Refinement here is hierarchical from a square base mesh, so elements stay
     square and the same $\\ell/h$ holds along the crack as across it --- a
     tensor-product graded mesh can only resolve one direction.
 
     *The load increments* must be small enough that the staggered iteration
-    starts each step near its fixed point. Fixed increments of $10^{-6}$
-    through the peak need two sweeps per step; large adaptive increments need
-    hundreds, because alternate minimisation converges linearly at a rate that
-    degrades with increment size.
+    starts each step near its fixed point. Large increments can require many
+    more sweeps because alternate minimization converges linearly at a rate
+    that degrades with increment size.
 
     *The inner convergence test* has to be one the iteration can actually pass.
     On the softening branch the crack advances during the sweeps, so a bound on

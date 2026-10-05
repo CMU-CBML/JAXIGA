@@ -82,17 +82,12 @@ ALL = lambda x: jnp.full(x.shape[0], True)
 RESULTS = {}
 
 def figure_data(name, compute):
-    """Plot data for one figure, computed once and then committed.
+    """Compute and cache plot data separately from drawing a figure.
 
-    The phase-field figures cost hours of GPU time to produce and seconds to
-    draw, so the two are separated here: the solve writes its plot data to
-    ``paper/figdata/`` and the figure is drawn from that. The data is what goes
-    into version control -- ``figures/*.pdf`` are build products, and the
-    blanket ``*.pdf`` rule in ``.gitignore`` already excludes them.
-
-    Cached like :func:`fenicsx_reference` and :func:`machine_timings`: the
-    committed file is used unless ``JAXIGA_RECOMPUTE_FIGURES`` is set, so
-    ``make_figures.py`` rebuilds every figure on a machine with no GPU.
+    The solve writes JSON records and compressed arrays to ``paper/figdata/``.
+    Later runs reuse those files unless ``JAXIGA_RECOMPUTE_FIGURES`` is set.
+    No saved data is bundled with the public source tree. Separating solving
+    from plotting lets a figure be redrawn without repeating the simulation.
 
     ``compute`` returns ``(record, arrays)``. ``record`` is JSON -- scalars,
     labels and the load--displacement curves, the things the paper quotes and
@@ -158,9 +153,7 @@ def _write_provenance_table(info):
                         f"(Python {fx['python']})"))
     mach = RESULTS.get("machine_versions")
     if mach:
-        # The plate benchmark is measured on its own machine, both devices of
-        # it, and the rows above describe the machine everything else ran on.
-        # Naming both is the only way a reader can tell which is which.
+        # Record benchmark devices separately from the current process backend.
         gpu, cpu = mach["gpu"], mach["cpu"]
         rows.append(("Benchmark machine, CPU",
                      cpu["device_name"].replace("_", "\\_")))

@@ -245,22 +245,10 @@ def rhs(problem, params, ctx: MethodContext | None = None):
     return -residual(zero, params, ctx)
 
 
-# Free dofs above which conjugate gradients overtakes the host factorisation on
-# an accelerator. Measured on the plate benchmark at degree four, where the two
-# routes cross within a percent of each other at 3040 unknowns and the
-# iterative one then pulls away (0.58 against 1.70 seconds at 10,080, 1.38
-# against 29.9 at 36,448). Below the crossover the iteration count is what it
-# always was, but each iteration is a kernel launch on a system too small to
-# fill the device.
-#
-# One number cannot be right for every degree: the crossover rises as the
-# degree falls, because a narrower band makes the factorisation cheaper while
-# leaving the iteration count much as it was. Across degrees two to four over
-# six refinements this threshold picks the slower route exactly once --- degree
-# two at 8976 unknowns, where it costs 11 per cent --- and picks correctly at
-# every other level, which is the accuracy a single degree-blind number buys.
-# A degree-aware rule would remove that case; it has not seemed worth the
-# extra surface area.
+# Default free-dof threshold for selecting CG on accelerators. Small systems
+# can favor host factorization because of iterative kernel-launch overhead.
+# The crossover depends on device, degree and conditioning; callers can choose
+# a solver explicitly with LinearOptions.
 CG_CROSSOVER = 3000
 
 
@@ -270,7 +258,7 @@ def default_linear(problem, n_free: int | None = None) -> LinearOptions:
     The declaration assumes admissible coefficients and boundary conditions
     removing nullspaces. An inherited declaration is invalidated by an energy
     override unless the subclass explicitly opts in again. The 3000-free-dof
-    accelerator threshold is an A100 plate-benchmark heuristic; callers can
+    accelerator threshold is a heuristic; callers can
     override it with LinearOptions. CPUs and unclassified operators use LU.
     """
     big_enough = n_free is None or n_free >= CG_CROSSOVER

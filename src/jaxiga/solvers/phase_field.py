@@ -238,17 +238,9 @@ class JacobiCG:
     """Preconditioned conjugate gradients on the same sparsity pattern.
 
     The degraded-elasticity operator is symmetric positive definite -- the
-    residual stiffness ``k`` keeps it so even inside a fully broken region --
-    so conjugate gradients apply, and in 3D they are the only sensible choice.
-    A direct factorisation of a 3D system fills in badly: measured on the
-    notched cube, ``splu`` fill grows from 2.8 times the matrix at 3k degrees of
-    freedom to 8.5 times at 15k, and the factorisation goes from 0.19s to 13s
-    while the assembly that feeds it stays under half a second. Jacobi-CG
-    solves the same systems in 0.1s and 1.1s.
-
-    Iteration counts here are flat in the damage -- around 130, and slightly
-    *fewer* once a crack has formed than before it -- so the near-singular
-    stiffness of broken material is not the difficulty it might look like.
+    residual stiffness ``k`` keeps it so even inside a fully broken region.
+    CG avoids the fill-in and memory cost of a direct factorization, which can
+    become substantial for three-dimensional systems.
 
     Each solve warm-starts from the previous one, which is the same observation
     that makes :class:`CachedLU` pay in 2D: consecutive staggered sweeps ask
@@ -316,26 +308,12 @@ class DeviceCG:
     ``JacobiCG`` is ``scipy.sparse.linalg.cg`` on the host, so every sweep
     moves the matrix and right-hand side of both subproblems across the bus and
     the result back -- four crossings per sweep -- and then does the arithmetic
-    on one core. A three-dimensional run therefore sits at high CPU with the
-    accelerator idle. This keeps the whole solve where the assembly already
-    is.
-
-    Measured on the notched-cube displacement systems, against the host solver
-    at the same tolerance and to the same agreement with a direct
-    factorisation (``paper/bench_device_cg.py``):
-
-    ======  ==========  ==========  =======
-     dofs    host CG     this        factor
-    ======  ==========  ==========  =======
-      3068     0.36 s     0.019 s     19.5
-      7162     1.13 s     0.037 s     30.6
-     15452     3.87 s     0.114 s     33.9
-    ======  ==========  ==========  =======
+    on the host. Keeping the solve on the device avoids these transfers.
 
     ``data`` and ``b`` are arguments of the compiled function rather than
     captured constants, so XLA does not fold them into the executable; only the
-    sparsity indices are closed over. Compilation costs 0.8-5.0 s once per
-    mesh, against the hundreds of sweeps a mesh serves.
+    sparsity indices are closed over. The compiled solver is reused across
+    sweeps on the same mesh.
 
     ``jax.scipy.sparse.linalg.cg`` does not report an iteration count, so
     unlike :class:`JacobiCG` this cannot say how many it took; ``calls`` is
@@ -533,15 +511,11 @@ class _Mesh:
 
         Each of the five jitted closures above closes over this mesh's basis
         and method contexts, and XLA folds them into the executable as
-        constants: the basis gradients alone are
-        ``n_elems * n_local * n_q * dim`` floats, a quarter of a gigabyte on a
-        3D mesh of ten thousand elements. Dropping the Python objects does not
-        release them, because the compiled executable is held in the jit cache
-        of each function, keyed on the argument shapes. An adaptive run would
-        therefore accumulate one mesh worth of device memory per remesh --
-        measured on the notched cube, enough to exhaust a 40 GB device after a
-        handful of them -- so the retired executables are released here, where
-        the mesh they belong to goes out of use.
+        constants. The basis gradients require
+        ``n_elems * n_local * n_q * dim`` floats. Dropping Python objects may
+        leave compiled executables in the jit cache, so an adaptive run can
+        accumulate device memory for retired meshes. Clear those caches when
+        the mesh goes out of use.
         """
         for fn in (self.assemble_u, self.lift_u, self.assemble_d,
                    self.reaction_sum, self.driving_force):

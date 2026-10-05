@@ -179,10 +179,8 @@ def default_case(case):
 def resident_gb():
     """Resident set size, in GB.
 
-    Reported alongside the load steps because in 3D memory, not time, is what
-    ends a run: a remesh at 16000 elements peaks near 8 GB, and a machine that
-    runs out kills the process without a traceback. Watching it climb is the
-    difference between diagnosing that and guessing at it.
+    Reported alongside load steps to help monitor memory consumption during
+    adaptive refinement, particularly in three-dimensional cases.
     """
     try:
         out = os.popen(f"ps -o rss= -p {os.getpid()}").read().strip()

@@ -42,9 +42,8 @@ backs the energy method's optimisers, so it is a core requirement). JAXIGA
 enables 64-bit floats on import; FEM-grade conditioning requires them. For GPU,
 install a matching `jax[cuda...]` wheel first.
 
-`requirements-lock.txt` pins the exact versions the paper's results were
-produced with. The independent JAX-FEM comparison has its own reproducible
-environment in `paper/jaxfem-environment.yml`. Licence: MIT (see `LICENSE`).
+`requirements-lock.txt` provides a pinned dependency snapshot. The independent
+JAX-FEM comparison has its own reproducible environment in `paper/jaxfem-environment.yml`. Licence: MIT (see `LICENSE`).
 
 ## Learning examples
 
@@ -154,8 +153,7 @@ u = solve_parameters(2.0).block_until_ready()
 `python paper/benchmark_execution.py --output tmp/benchmarks/execution.json` compares
 synchronized eager and fully jitted solves, recording cold costs, raw warm
 samples and environment information. It refuses to overwrite an existing
-record. These local measurements are separate from the archived A100 timings.
-See [runtime priorities](docs/runtime-improvements.md) for further options.
+record.
 
 ## Adaptive local refinement
 
@@ -263,9 +261,8 @@ Independent end-to-end verification is also available through FEniCSx.
 `paper/reference_fenicsx.py` solves the plate-with-hole benchmark with Lagrange
 elements on curved triangles, sharing no code with JAXIGA — not even an
 interpreter — and writes `paper/fenicsx_reference.json`. Both codes converge to
-the analytical Kirsch solution at their theoretical rates, and JAXIGA's
-deviation from a 167k-dof FEniCSx reference matches its deviation from the
-analytical solution to three to seven significant digits. To generate the reference results (not bundled in this repository):
+the analytical Kirsch solution. To generate reference results for an independent
+comparison (not bundled in this repository):
 
 ```bash
 /path/to/dolfinx/python paper/reference_fenicsx.py paper/fenicsx_reference.json

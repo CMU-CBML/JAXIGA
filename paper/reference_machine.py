@@ -6,16 +6,9 @@ process that has already initialised CUDA cannot be talked out of it:
     python3 reference_machine.py out.json --backend gpu
     python3 reference_machine.py out.json --backend cpu
 
-The sweep is degrees two to four over the four refinements the cross-code
-comparison uses, with degree four carried two levels further, to $36{,}448$
-unknowns, where the two solver routes separate.
-
-Each level is timed twice: once with the library default, Jacobi-preconditioned
-conjugate gradients on the device, and once with the sparse LU it replaced,
-which is a host callback on either backend. Reporting both is what lets the
-figure show that the accelerator is worth having only once the solve stops
-leaving the device --- the direct route is within a few percent of its CPU
-timing no matter which backend assembles the matrix.
+The sweep covers degrees two to four and several refinement levels. Each
+level compares the library's default solver with explicit sparse LU, recording
+assembly and solve timings for the selected backend.
 """
 
 import argparse
@@ -32,8 +25,7 @@ parser.add_argument("--backend", choices=("cpu", "gpu"), required=True)
 parser.add_argument("--max-refine", type=int, default=6)
 args = parser.parse_args()
 
-# Before any JAX import: on this machine the CUDA plugin is installed, so the
-# CPU run has to be asked for explicitly rather than merely not asked for.
+# Select CPU before importing JAX, including on hosts with a CUDA plugin.
 if args.backend == "cpu":
     os.environ["JAX_PLATFORMS"] = "cpu"
 

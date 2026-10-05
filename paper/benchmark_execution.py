@@ -4,8 +4,8 @@ Example (CPU; choose a new output filename for each measurement):
     python paper/benchmark_execution.py --output tmp/benchmarks/execution.json
 
 Run with JAX_PLATFORMS=cpu to select the CPU on a machine with a GPU installed.
-The same script can be run on an accelerator without modifying the archived
-A100 records. Cold costs include compilation; warm samples are synchronized.
+The script also supports accelerators. Cold costs include compilation; warm
+samples are synchronized.
 """
 import argparse
 import hashlib

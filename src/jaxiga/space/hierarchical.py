@@ -211,8 +211,7 @@ def _two_scale_rows(tau, deg, t, indices):
     every live function, and in a tensor-product patch each distinct value
     recurs once for every function sharing it in the other directions -- in 3D
     that is O(n^(2/3)) times each. Computing the distinct rows and gathering is
-    exact and removes the repetition, which measured as a third of the whole
-    cost of building a 3D hierarchical space.
+    exact and avoids recomputing the same rows while building the space.
     """
     indices = np.asarray(indices, dtype=np.int64)
     unique, inverse = np.unique(indices, return_inverse=True)

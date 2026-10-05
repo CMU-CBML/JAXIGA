@@ -56,9 +56,8 @@ def _fracture_3d_compute():
     for plane in ("stress", "strain"):
         runs[f"plate_{plane}"] = _run_fracture(
             plate(1 / 16, plane), 8, 2, dilate=1.0, label=f"2D plane {plane} x 0.2")
-    # The mesh/crack panel is taken from the coarser case: it carries the same
-    # message -- refinement follows the damage -- at a size that fits
-    # comfortably on a 40 GB device, where l = 1/32 is at the edge of it.
+    # Capture the mesh/crack panel from the coarser case to limit memory use
+    # while showing how refinement follows the damage.
     runs["cube_16"] = _run_fracture(cube(1 / 16), 8, 2, dilate=1.0,
                                     label="3D cube, l = 1/16", capture_final=True)
     runs["cube_32"] = _run_fracture(cube(1 / 32), 8, 3, dilate=1.5,
